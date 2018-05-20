@@ -1,0 +1,72 @@
+#!/sbin/sh
+# LazyFlasher installer backend
+
+tmp=/tmp/twrp-install
+
+if [ "$3" ]; then
+	zip=$3
+	console=/proc/$$/fd/$2
+	# write the location of the console buffer to /tmp/console for other scripts to use
+	echo "$console" > /tmp/console
+else
+	console=$(cat /tmp/console)
+	[ "$console" ] || console=/proc/$$/fd/1
+fi
+
+print() {
+	if [ "$1" ]; then
+		echo "ui_print $1" > "$console"
+	else
+		echo "ui_print  " > "$console"
+	fi
+	echo
+}
+
+abort() {
+	[ "$1" ] && {
+		print "Error: $1"
+		print "Aborting..."
+	}
+	cleanup
+	print "Failed to patch boot image!"
+	exit 1
+}
+
+cleanup() {
+	[ "$zip" ] && rm /tmp/console
+}
+
+extract() {
+	rm -rf "$2"
+	mkdir -p "$2"
+	unzip -o "$1" -d "$2" || abort "Failed to extract zip to $2!"
+}
+
+setperm() {
+	find "$3" -type d -exec chmod "$1" {} \;
+	find "$3" -type f -exec chmod "$2" {} \;
+}
+
+print "#######################################"
+print "#   TWRP installer for Mi A1 tissot   #"
+print "#       Treble mod by CosmicDan       #"
+print "#######################################"
+
+# Unpack the installer
+[ "$zip" ] && {
+	print "Unpacking the installer..."
+	extract "$zip" "$tmp"
+}
+cd "$tmp"
+
+./config.sh
+
+setperm 0755 0755 "$bin"
+
+print "Running boot image patcher..."
+sh twrp-installer.sh || abort
+
+print "Boot image patching complete"
+
+cleanup
+print "Done installing TWRP!"
