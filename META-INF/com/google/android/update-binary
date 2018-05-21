@@ -70,3 +70,9 @@ print "Boot image patching complete"
 
 cleanup
 print "Done installing TWRP!"
+print " "
+print "###########################################"
+print "  Reboot Recovery and check Advanced page  "
+print "   for new Treble Manager to repartition   "
+print "###########################################"
+print " "

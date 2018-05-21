@@ -1,0 +1,9 @@
+<b>1.0</b>
+
+<*>Initial version</*>
+<*>Aroma-based 'Treble Manager' button added to TWRP Main Menu > Advanced</*>
+<*>Has choice to shrink userdata or system to create new vendor partition</*>
+<*>Can restore stock partition map from either Treble state.</*>
+
+
+

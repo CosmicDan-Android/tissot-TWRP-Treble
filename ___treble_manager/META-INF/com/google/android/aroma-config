@@ -1,0 +1,216 @@
+# set default colourspace
+ini_set("force_colorspace","rgba");
+
+# set theme and font
+theme("miui");
+fontresload( "0", "ttf/Roboto-Regular.ttf", "12" );
+fontresload( "1", "ttf/Roboto-Regular.ttf", "14" );
+
+# set device from ro.product.device prop, abort if not possible
+setvar("device", sysprop("ro.product.device"));
+if (!getvar("device") == "tissot" ) then
+    # something wrong with this device/recovery
+    ini_set("text_next", "Exit");
+    ini_set("icon_next", "");
+    textbox(
+        "Error",
+        "Wrong device",
+        "@warning",
+        "This is only for tissot (Mi A1) devices."
+    );
+    exit("");
+endif;
+
+# extract common files
+ziptotmp("version.prop", "version.prop");
+ziptotmp("changelog.txt", "changelog.txt");
+ziptotmp("disclaimer.txt", "disclaimer.txt");
+ziptotmp("credits.txt", "credits.txt");
+
+# set common variables
+ini_set("rom_name",             file_getprop("/tmp/aroma/version.prop","name"));
+ini_set("rom_version",          file_getprop("/tmp/aroma/version.prop","version"));
+ini_set("rom_author",           "CosmicDan (see Credits for more)");
+ini_set("rom_device",           getvar("device"));
+
+# show disclaimer
+agreebox(
+    "Disclaimer",
+    "Please read and acknowledge the following information",
+    "@warning",
+    read("/tmp/aroma/disclaimer.txt"),
+    "I understand and have made a Recovery backup",
+    "You must acknowledge the disclaimer to use " + ini_get("rom_name") + "!"
+);
+
+
+
+###################
+### Main menu
+###################
+
+gotolabel("start");
+ini_set("text_next", "Next");
+ini_set("icon_next", "@next");
+
+# gather information about existing partition map
+# Not necessary, happens in a split second
+#pleasewait("Reading your partition table...");
+setvar("partition_status", exec("/sbin/sh", "/treble_manager/get_partition_status.sh"));
+setvar("partition_status_text", "Unrecognized");
+setvar("repartition_subtext", "Repartition unavailable - unrecognized partition layout");
+if (getvar("partition_status") == 1) then
+	setvar("partition_status_text", "Stock");
+	setvar("repartition_subtext", "Repartition device for Treble capability");
+endif;
+if (getvar("partition_status") == 2) then
+	setvar("partition_status_text", "Treble (Shrunk System)");
+	setvar("repartition_subtext", "Restore stock partition map");
+endif;
+if (getvar("partition_status") == 3) then
+	setvar("partition_status_text", "Treble (Shrunk Userdata)");
+	setvar("repartition_subtext", "Restore stock partition map");
+endif;
+
+menubox(
+    "Welcome to " + ini_get("rom_name") + " v" + ini_get("rom_version") + "!",
+    "Detected Device: <b>" + getvar("device") + "</b>\n" +
+	"Detected partition map: " + getvar("partition_status_text"),
+    "@home",
+    "choice_main_menu.prop",
+    "Repartition",				getvar("repartition_subtext"),						"@chip",
+    "Changelog",				"View changelog for this version",					"@changelog",
+	"Credits",					"See thanks and credits",							"@credits",
+    "Exit",						"Exit and return to Recovery",						"@exit"
+);
+
+
+
+###################
+### Repartition
+###################
+
+if prop("choice_main_menu.prop", "selected") == "1" then
+	# invalid partition map
+	if (getvar("partition_status") == 0) then
+		alert(
+			"Unable to repartition",
+			"Your partition map is unrecognized. Please contact CosmicDan for help.",
+			"@warning"
+		);
+		goto("start");
+	endif;
+
+	# Stock partition
+	if (getvar("partition_status") == 1) then
+		form(
+			"Repartition for Treble",
+			"A normal partition must be shrunk to add new Treble Vendor partitions. Both choices are 100% compatible with Treble ROMs.",
+			"@chip",
+			"choice_repartition.prop",
+			"treble_userdata",		"Shrink Userdata",			"Shrink Userdata by 1.2GB. Maintains compatibility with non-Treble ROMs. " +
+																"<#c00>This will wipe Userdata and Internal Storage!</#>",									"select.selected",
+			"treble_system",    	"Shrink System(s)",			"Shrink each System by 600MB. " + 
+																"<#c00>You will be unable to flash any non-Treble ROM! Also wipes existing System slots.</#>",	"select"
+		);
+		
+		setvar("partition_subtitle", "You are about to repartition for Treble support.");
+		
+		if prop("choice_repartition.prop","root") == "treble_userdata" then
+			setvar("partition_firstline", "This will shrink Userdata by 1.2GB, adding vendor partitions (one for each slot) and allow flashing a Treble ROM.");
+			setvar("partition_wipe_label", "your USERDATA, including INTERNAL STORAGE, so make sure you have backed up anything you want to keep!");
+		else
+			setvar("partition_firstline", "This will shrink each system slot by 600MB, adding vendor partitions (one for each slot) and allow flashing a Treble ROM.\n\n" +
+											"Note that you will <b>NOT</b> be able to flash non-Treble ROM's while in this partition state.");
+			setvar("partition_wipe_label", "both SYSTEM slots, requiring you to install a new ROM or restore from a TWRP backup!");
+		endif;
+	else
+		writetmpfile("choice_repartition.prop", "root=stock");
+		setvar("partition_subtitle", "You are about to restore stock partitions.");
+		setvar("partition_firstline", "This will remove Treble support from your device, restoring stock partitions and reclaiming the space.");
+		setvar("partition_wipe_label", "your USERDATA, including INTERNAL STORAGE, so make sure you have backed up anything you want to keep!");
+		if (getvar("partition_status") == 2) then
+			setvar("partition_wipe_label", "both SYSTEM slots, requiring you to install a new ROM or restore from a TWRP backup!");
+		endif;
+		
+	endif;
+	
+	
+	
+	ini_set("text_next", "Repartition");
+	ini_set("icon_next", "@undo");
+	
+	agreebox(
+		"Repartition for Treble",
+		getvar("partition_subtitle"),
+		"@warning",
+		"\n\n" + getvar("partition_firstline") + "\n\n" + 
+		"<#c00><b>This will COMPLETELY WIPE " + getvar("partition_wipe_label") + "</b></#>\n\n\n" +
+		"Please check the box below to confirm.",
+		"I wish to repartition this device",
+		"Check the box to confirm!"
+	);
+	
+	
+	# debug
+	#goto("start");
+endif;
+
+
+
+###################
+### Changelog and Credits
+###################
+
+if prop("choice_main_menu.prop","selected")=="2" then
+    ini_set("text_next", "Return  ");
+    ini_set("icon_next", "@home");
+    textbox(
+        "Changelog",
+        "Changelog up to current version (" + ini_get("rom_version") + ")",
+        "@changelog",
+        read("/tmp/aroma/changelog.txt")
+    );
+    goto("start");
+endif;
+
+if prop("choice_main_menu.prop","selected")=="3" then
+    ini_set("text_next", "Return  ");
+    ini_set("icon_next", "@home");
+    textbox(
+        "Credits",
+        "Thanks and credits for Treble Manager",
+        "@credits",
+        read("/tmp/aroma/credits.txt")
+    );
+    goto("start");
+endif;
+
+
+
+###################
+### Exit
+###################
+
+if prop("choice_main_menu.prop","selected")=="4" then
+    exit("");
+endif;
+
+
+
+###################
+### Installation
+###################
+
+ini_set("text_next", "Exit  ");
+ini_set("icon_next", "@exit");
+setvar("retstatus",
+    install(
+        "Repartitioning",
+        "<b>"+ini_get("rom_name")+"</b> is performing the repartition.\n\n"+
+        "This may take a minute.",
+        "@chip",
+        ""
+    )
+);
+exit("");

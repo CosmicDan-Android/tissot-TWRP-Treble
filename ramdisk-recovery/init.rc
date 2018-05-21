@@ -107,6 +107,12 @@ service adbd /sbin/adbd --root_seclabel=u:r:su:s0 --device_banner=recovery
     socket adbd stream 660 system system
     seclabel u:r:adbd:s0
 
+# Treble mod
+service treble_manager /sbin/sh /sbin/treble_manager_launch.sh
+    disabled
+    oneshot
+    seclabel u:r:recovery:s0
+
 # Always start adbd on userdebug and eng builds
 on property:ro.debuggable=1
     #write /sys/class/android_usb/android0/enable 1

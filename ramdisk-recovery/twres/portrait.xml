@@ -3493,6 +3493,18 @@
 				<text>{@adb_sideload_btn=ADB Sideload}</text>
 				<action function="page">sideload</action>
 			</button>
+			
+			<button style="main_button">
+				<condition var1="tw_has_boot_slots" var2="1"/>
+				<placement x="%center_x%" y="%row19_y%"/>
+				<text>{@treble_partition=Treble Manager}</text>
+				<actions>
+					<action function="set">tw_action=cmd</action>
+					<action function="set">tw_action_param=/sbin/sh /sbin/treble_manager.sh</action>
+					<action function="set">tw_has_action2=0</action>
+					<action function="page">singleaction_page</action>
+				</actions>
+			</button>
 
 			<button style="main_button">
 				<condition var1="tw_show_dumlock" var2="1"/>

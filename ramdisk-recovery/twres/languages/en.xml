@@ -461,6 +461,7 @@
 		<string name="term_kill_btn">KILL</string>
 		<string name="term_sel_folder_hdr">Browse to Starting Folder</string>
 		<string name="adb_sideload_hdr">ADB Sideload</string>
+		<string name="treble_partition">Treble Manager</string>
 		<string name="sideload_wipe_dalvik_chk">Wipe Dalvik Cache</string>
 		<string name="sideload_wipe_cache_chk">Wipe Cache</string>
 		<string name="swipe_to_sideload">Swipe to Start Sideload</string>
