@@ -159,6 +159,6 @@ while read line || [ -n "$line" ]; do
     ui_print "$line"
 done < /tmp/aroma/credits.txt
 ui_print " ";
-#ui_print "<#009>Be sure to select 'Save Logs' in case you need to report a bug (this will overwrite any previous log). Will save to a microSD card only.</#>";
+ui_print "<#009>Be sure to select 'Save Logs' in case you need to report a bug. Will be saved to microSD root as 'treble_manager.log'.</#>";
 set_progress "1.0"
 

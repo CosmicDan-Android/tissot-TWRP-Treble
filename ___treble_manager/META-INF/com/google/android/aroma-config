@@ -202,7 +202,7 @@ endif;
 ### Installation
 ###################
 
-ini_set("text_next", "Exit  ");
+ini_set("text_next", "Reboot TWRP");
 ini_set("icon_next", "@exit");
 setvar("retstatus",
     install(
