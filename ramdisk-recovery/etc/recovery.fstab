@@ -8,5 +8,9 @@
 /efs1            emmc             /dev/block/bootdevice/by-name/modemst1   flags=backup=1;display=EFS
 /efs2            emmc             /dev/block/bootdevice/by-name/modemst2   flags=backup=1;subpartitionof=/efs1
 
+# These are for flashing img's
+/system_image    emmc             /dev/block/bootdevice/by-name/system     flags=slotselect;flashimg=1;backup=0
+/vendor_image    emmc             /dev/block/bootdevice/by-name/vendor     flags=slotselect;flashimg=1;backup=0
+
 /sdcard1         auto             /dev/block/mmcblk1p1 /dev/block/mmcblk1  flags=display="Micro SDcard";storage;wipeingui;removable;andsec
 /usb-otg         auto             /devices/soc/7000000.ssusb/7000000.dwc3/xhci-hcd.0.auto*     flags=display="USB-OTG";storage;wipeingui;removable

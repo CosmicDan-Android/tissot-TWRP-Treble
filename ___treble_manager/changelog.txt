@@ -1,3 +1,9 @@
+<b>1.2</b>
+
+<*>Support flashing img files to vendor and system (e.g. GSI's)</*>
+
+
+
 <b>1.1</b>
 
 <*>Treble Manager will now copy any saved log file to the microSD root</*>

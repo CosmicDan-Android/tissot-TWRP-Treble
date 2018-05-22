@@ -1,4 +1,4 @@
-SET ZIP_NAME=Twrp-recoveryInstaller-3.2.1-2-oreo-TrebleManager_1.1.zip
+SET ZIP_NAME=Twrp-recoveryInstaller-3.2.1-2-oreo-TrebleManager_1.2.zip
 cd /d "%~dp0"
 :: Delete old installer ZIP
 del Twrp-*.zip >nul
